@@ -13,10 +13,13 @@
   "sections": {
     "header": {
       "type": "header",
-      "settings": {}
+      "settings": {
+        "logo": "shopify://shop_images/golden_shake_llc_logo.png",
+        "menu": "main-menu"
+      }
     }
   },
   "order": [
     "header"
-  ],
+  ]
 }
