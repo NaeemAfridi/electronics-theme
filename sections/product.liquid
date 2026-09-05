@@ -1,49 +1,196 @@
 {% comment %}
-  This section is used in the product template to render product page with
-  media, content, and add-to-cart form.
-
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/product
+  Electronics Product Detail Page (PDP) Section
 {% endcomment %}
 
-<div class="product-images">
-  {% for image in product.images %}
-    {% render 'image', class: 'product-image', image: image %}
-  {% endfor %}
-</div>
-
-<div class="product-info">
-  <h1>{{ product.title }}</h1>
-  <p>{{ product.price | money }}</p>
-  <p>{{ product.description }}</p>
-</div>
-
-<div class="product-form">
-  {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
-
-    <select name="id">
-      {% for variant in product.variants %}
-        <option
-          value="{{ variant.id }}"
-          {% if variant == current_variant %}
-            selected="selected"
+<div class="product-page-section py-8 md:py-12 bg-background text-foreground">
+  <div class="max-w-[var(--page-width)] mx-auto px-4 md:px-6">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+      
+      {% comment %} Left Column: Product Gallery {% endcomment %}
+      <div class="lg:col-span-7 space-y-4">
+        <div class="product-main-media relative rounded-card overflow-hidden bg-surface border border-border aspect-square md:aspect-[4/3]">
+          {% if product.featured_image != blank %}
+            {{ product.featured_image | image_url: width: 1200 | image_tag: class: 'w-full h-full object-contain p-4', loading: 'eager', alt: product.title }}
+          {% else %}
+            <div class="w-full h-full flex items-center justify-center text-muted">
+              <span>No product image available</span>
+            </div>
           {% endif %}
-        >
-          {{ variant.title }} - {{ variant.price | money }}
-        </option>
-      {% endfor %}
-    </select>
+        </div>
 
-    <input type="text" name="quantity" min="1" value="1">
+        {% if product.images.size > 1 %}
+          <div class="grid grid-cols-5 gap-3">
+            {% for image in product.images %}
+              <button
+                type="button"
+                class="media-thumbnail rounded-lg overflow-hidden border border-border bg-surface aspect-square focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {{ image | image_url: width: 200 | image_tag: class: 'w-full h-full object-cover', loading: 'lazy', alt: product.title }}
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
 
-    <input type="submit" value="Add to cart">
-    {{ form | payment_button }}
-  {% endform %}
+      {% comment %} Right Column: Product Buy Box & Tech Info {% endcomment %}
+      <div class="lg:col-span-5 flex flex-col justify-between space-y-6 bg-surface/50 border border-border p-6 md:p-8 rounded-card">
+        
+        <div>
+          {% if product.vendor != blank %}
+            <span class="text-xs uppercase tracking-widest text-accent font-bold mb-2 block">
+              {{ product.vendor }}
+            </span>
+          {% endif %}
+
+          <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            {{ product.title }}
+          </h1>
+
+          {% comment %} Price & Stock Status {% endcomment %}
+          <div class="mt-4 flex items-center gap-4">
+            <span id="ProductPrice" class="text-2xl font-bold text-accent">
+              {{ product.selected_or_first_available_variant.price | money }}
+            </span>
+
+            {% if product.selected_or_first_available_variant.compare_at_price > product.selected_or_first_available_variant.price %}
+              <span id="ComparePrice" class="text-sm line-through text-muted">
+                {{ product.selected_or_first_available_variant.compare_at_price | money }}
+              </span>
+            {% endif %}
+
+            {% if product.available %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">
+                In Stock & Ready to Ship
+              </span>
+            {% else %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-950 text-rose-400 border border-rose-800">
+                Sold Out
+              </span>
+            {% endif %}
+          </div>
+
+          {% comment %} Hardware Spec Highlights (Metafield Integration) {% endcomment %}
+          <div class="mt-6 grid grid-cols-2 gap-3 py-4 border-y border-border">
+            <div class="p-3 bg-background border border-border rounded-lg text-xs">
+              <span class="text-muted block">Battery Life</span>
+              <strong class="text-foreground text-sm font-semibold">
+                {{ product.metafields.electronics.battery_life.value | default: 'Up to 40 Hours' }}
+              </strong>
+            </div>
+
+            <div class="p-3 bg-background border border-border rounded-lg text-xs">
+              <span class="text-muted block">Connectivity</span>
+              <strong class="text-foreground text-sm font-semibold">
+                {{ product.metafields.electronics.connectivity.value | default: 'Bluetooth 5.3' }}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        {% comment %} Variant Picker & Purchase Form {% endcomment %}
+        <div class="space-y-6">
+          {% form 'product', product, id: 'AddToCartForm' %}
+            {% assign current_variant = product.selected_or_first_available_variant %}
+
+            <input type="hidden" name="id" value="{{ current_variant.id }}">
+
+            {% comment %} Options Variant Selector Pills {% endcomment %}
+            {% if product.has_only_default_variant == false %}
+              {% for option in product.options_with_values %}
+                <div class="space-y-2">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-muted">
+                    {{ option.name }}: <span class="text-foreground">{{ option.selected_value }}</span>
+                  </label>
+                  <div class="flex flex-wrap gap-2">
+                    {% for value in option.values %}
+                      <button
+                        type="button"
+                        class="variant-pill-btn px-4 py-2 text-xs font-semibold rounded-button border transition-all {% if option.selected_value == value %} border-accent bg-accent/10 text-accent {% else %} border-border bg-background text-foreground hover:border-slate-500 {% endif %}"
+                        data-option-index="{{ forloop.parentloop.index0 }}"
+                        data-option-value="{{ value }}"
+                      >
+                        {{ value }}
+                      </button>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endfor %}
+            {% endif %}
+
+            {% comment %} Protection Plan / Extended Warranty Option {% endcomment %}
+            <div class="p-4 bg-background border border-border rounded-lg flex items-start gap-3 mt-4">
+              <input type="checkbox" id="WarrantyProtection" name="properties[2-Year Extended Protection Plan]" value="$29.99" class="mt-1 accent-blue-600 rounded">
+              <label for="WarrantyProtection" class="text-xs text-muted leading-snug cursor-pointer">
+                <strong class="text-foreground block font-semibold mb-0.5">Add 2-Year Hardware Protection Plan (+ $29.99)</strong>
+                Covers accidental drops, liquid damage, and battery degradation with priority replacement.
+              </label>
+            </div>
+
+            {% comment %} Quantity & Submit Buttons {% endcomment %}
+            <div class="flex items-center gap-3 pt-4">
+              <div class="w-24">
+                <input
+                  type="number"
+                  name="quantity"
+                  min="1"
+                  value="1"
+                  class="w-full bg-background border border-border text-foreground px-3 py-3 text-center text-sm rounded-button focus:outline-none focus:ring-1 focus:ring-accent"
+                >
+              </div>
+
+              <button
+                type="submit"
+                class="flex-1 bg-accent hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-button transition-colors text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                {% unless current_variant.available %} disabled {% endunless %}
+              >
+                {% if current_variant.available %}
+                  Add to Cart
+                {% else %}
+                  Sold Out
+                {% endif %}
+              </button>
+            </div>
+
+            {% comment %} Compare Drawer Trigger Button {% endcomment %}
+            <button
+              type="button"
+              class="w-full mt-3 py-2.5 px-4 bg-background hover:bg-slate-800 text-slate-300 border border-border rounded-button text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
+              onclick="TechGearCompare && TechGearCompare.toggle({ id: '{{ product.id }}', title: '{{ product.title | escape }}', price: '{{ product.price | money }}', image: '{{ product.featured_image | image_url: width: 300 }}', url: '{{ product.url }}', battery: '{{ product.metafields.electronics.battery_life.value | default: "Up to 40h" }}', connectivity: '{{ product.metafields.electronics.connectivity.value | default: "Bluetooth 5.3" }}', anc: 'Yes' })"
+            >
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              Add to Spec Comparison
+            </button>
+
+            <div class="mt-3">
+              {{ form | payment_button }}
+            </div>
+
+          {% endform %}
+        </div>
+
+      </div>
+
+    </div>
+
+    {% comment %} Product Description & Specs Accordion {% endcomment %}
+    <div class="mt-12 md:mt-16 pt-8 border-t border-border">
+      <h3 class="text-xl font-bold text-foreground mb-4">Product Overview</h3>
+      <div class="prose prose-invert max-w-none text-muted text-sm leading-relaxed">
+        {{ product.description }}
+      </div>
+    </div>
+
+  </div>
 </div>
 
 {% schema %}
 {
-  "name": "t:general.product",
+  "name": "Electronics Product",
+  "tag": "section",
+  "class": "electronics-pdp-section",
   "settings": [],
   "disabled_on": {
     "groups": ["header", "footer"]

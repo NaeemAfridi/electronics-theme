@@ -32,6 +32,9 @@
 
     {{ content_for_layout }}
 
+    {% render 'spec-comparison-drawer' %}
     {% sections 'footer-group' %}
+
+    <script src="{{ 'spec-comparison.js' | asset_url }}" defer></script>
   </body>
 </html>

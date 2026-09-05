@@ -1,9 +1,9 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "Skeleton",
-    "theme_version": "0.1.0",
-    "theme_author": "Shopify",
+    "theme_name": "TechGear Electronics",
+    "theme_version": "1.0.0",
+    "theme_author": "FullStack Theme Dev",
     "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
     "theme_support_url": "https://support.shopify.com/"
   },
@@ -18,7 +18,7 @@
         "type": "font_picker",
         "id": "type_primary_font",
         "default": "work_sans_n4",
-        "label": "t:general.primary"
+        "label": "Primary Font"
       }
     ]
   },
@@ -28,16 +28,11 @@
       {
         "type": "select",
         "id": "max_page_width",
-        "label": "t:labels.page_width",
+        "label": "Max Page Width",
         "options": [
-          {
-            "value": "90rem",
-            "label": "t:options.page_width.narrow"
-          },
-          {
-            "value": "110rem",
-            "label": "t:options.page_width.wide"
-          }
+          { "value": "80rem", "label": "Narrow (1280px)" },
+          { "value": "90rem", "label": "Standard (1440px)" },
+          { "value": "100rem", "label": "Wide (1600px)" }
         ],
         "default": "90rem"
       },
@@ -45,38 +40,87 @@
         "type": "range",
         "id": "min_page_margin",
         "min": 10,
-        "max": 100,
-        "step": 1,
+        "max": 60,
+        "step": 2,
         "unit": "px",
-        "label": "t:labels.page_margin",
-        "default": 20
+        "label": "Page Margin Padding",
+        "default": 24
       }
     ]
   },
   {
-    "name": "t:general.colors",
+    "name": "Electronics Color System",
     "settings": [
       {
         "type": "color",
         "id": "background_color",
-        "default": "#FFFFFF",
-        "label": "t:labels.background"
+        "default": "#0f172a",
+        "label": "Page Background Color"
+      },
+      {
+        "type": "color",
+        "id": "surface_color",
+        "default": "#1e293b",
+        "label": "Surface / Card Background"
       },
       {
         "type": "color",
         "id": "foreground_color",
-        "default": "#333333",
-        "label": "t:labels.foreground"
+        "default": "#f8fafc",
+        "label": "Primary Text Color"
+      },
+      {
+        "type": "color",
+        "id": "muted_text_color",
+        "default": "#94a3b8",
+        "label": "Muted / Secondary Text Color"
+      },
+      {
+        "type": "color",
+        "id": "accent_color",
+        "default": "#3b82f6",
+        "label": "Accent Brand Color (Electric Blue)"
+      },
+      {
+        "type": "color",
+        "id": "border_color",
+        "default": "#334155",
+        "label": "Card & Input Border Color"
+      }
+    ]
+  },
+  {
+    "name": "Electronics Component Radius",
+    "settings": [
+      {
+        "type": "range",
+        "id": "card_corner_radius",
+        "min": 0,
+        "max": 24,
+        "step": 2,
+        "unit": "px",
+        "label": "Card Corner Radius",
+        "default": 12
+      },
+      {
+        "type": "range",
+        "id": "button_corner_radius",
+        "min": 0,
+        "max": 30,
+        "step": 2,
+        "unit": "px",
+        "label": "Button Corner Radius",
+        "default": 8
       },
       {
         "type": "range",
         "id": "input_corner_radius",
         "min": 0,
-        "max": 10,
-        "step": 1,
+        "max": 16,
+        "step": 2,
         "unit": "px",
-        "label": "t:labels.input_corner_radius",
-        "default": 4
+        "label": "Input Corner Radius",
+        "default": 8
       }
     ]
   }
