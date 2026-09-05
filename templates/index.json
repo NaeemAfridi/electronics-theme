@@ -1,19 +1,54 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "hotspots": {
       "type": "interactive-hotspots",
+      "blocks": {
+        "hotspot_hf6HjE": {
+          "type": "hotspot",
+          "settings": {
+            "top_position": 50,
+            "left_position": 50,
+            "badge": "01",
+            "title": "40mm Titanium Driver",
+            "description": "Custom acoustic chamber engineered for distortion-free bass and sub-10ms response."
+          }
+        }
+      },
+      "block_order": [
+        "hotspot_hf6HjE"
+      ],
       "settings": {
         "heading": "Precision Engineering Inside",
-        "subheading": "Hardware Specifications"
+        "subheading": "Hardware Specifications",
+        "image": "shopify://shop_images/electronics-store-banner.png",
+        "bg_override": ""
       }
     },
     "collection": {
       "type": "collection",
+      "settings": {
+        "collection": "",
+        "products_to_show": 8
+      }
+    },
+    "custom_section_Jf9hL6": {
+      "type": "custom-section",
+      "name": "t:general.custom_section",
       "settings": {}
     }
   },
   "order": [
     "hotspots",
-    "collection"
+    "collection",
+    "custom_section_Jf9hL6"
   ]
 }
