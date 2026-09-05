@@ -1,6 +1,15 @@
 {% comment %}
-  Electronics Collection & Faceted Catalog Section
+  Electronics Collection & Catalog Section
 {% endcomment %}
+
+{% liquid
+  assign target_collection = section.settings.collection | default: collection
+  if target_collection == blank or target_collection.products == blank
+    assign target_collection = collections.all
+  endif
+
+  assign limit = section.settings.products_to_show | default: 12
+%}
 
 <div class="collection-page-section py-8 md:py-12 bg-background text-foreground">
   <div class="max-w-[var(--page-width)] mx-auto px-4 md:px-6">
@@ -10,158 +19,98 @@
       <div>
         <span class="text-xs uppercase tracking-widest text-accent font-bold mb-1 block">Catalog</span>
         <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-          {{ collection.title }}
+          {{ target_collection.title | default: 'Featured Electronics' }}
         </h1>
-        {% if collection.description != blank %}
+        {% if target_collection.description != blank %}
           <p class="text-sm text-muted mt-2 max-w-2xl leading-relaxed">
-            {{ collection.description }}
+            {{ target_collection.description }}
           </p>
         {% endif %}
       </div>
 
       <div class="text-xs text-muted font-semibold bg-surface border border-border px-4 py-2 rounded-lg self-start md:self-auto">
-        Showing {{ collection.products_count }} Products
+        Showing {{ target_collection.products_count | default: 0 }} Products
       </div>
     </div>
 
-    {% comment %} Faceted Filters & Sorting Control Bar {% endcomment %}
-    <div class="mb-8 p-4 bg-surface border border-border rounded-card flex flex-wrap items-center justify-between gap-4">
-      
-      {% comment %} Filter Pills / Summary {% endcomment %}
-      <div class="flex items-center gap-2 overflow-x-auto">
-        <span class="text-xs font-bold text-muted uppercase tracking-wider">Filters:</span>
-        {% for filter in collection.filters %}
-          {% if filter.type == 'price_range' %}
-            {% if filter.min_value.value or filter.max_value.value %}
-              <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-accent/10 text-accent border border-accent/30 rounded-full font-medium">
-                Price: {{ filter.min_value.value | default: 0 | money }} - {{ filter.max_value.value | default: filter.range_max | money }}
-              </span>
+    {% comment %} Faceted Filters & Sorting Control Bar (Only on Collection Template Page) {% endcomment %}
+    {% if template.name == 'collection' and target_collection.filters.size > 0 %}
+      <div class="mb-8 p-4 bg-surface border border-border rounded-card flex flex-wrap items-center justify-between gap-4">
+        
+        {% comment %} Filter Pills / Summary {% endcomment %}
+        <div class="flex items-center gap-2 overflow-x-auto">
+          <span class="text-xs font-bold text-muted uppercase tracking-wider">Filters:</span>
+          {% for filter in target_collection.filters %}
+            {% if filter.type == 'price_range' %}
+              {% if filter.min_value.value or filter.max_value.value %}
+                <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-accent/10 text-accent border border-accent/30 rounded-full font-medium">
+                  Price: {{ filter.min_value.value | default: 0 | money }} - {{ filter.max_value.value | default: filter.range_max | money }}
+                </span>
+              {% endif %}
+            {% else %}
+              {% for value in filter.active_values %}
+                <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-accent/10 text-accent border border-accent/30 rounded-full font-medium">
+                  {{ filter.label }}: {{ value.label }}
+                </span>
+              {% endfor %}
             {% endif %}
-          {% else %}
-            {% for value in filter.active_values %}
-              <span class="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-accent/10 text-accent border border-accent/30 rounded-full font-medium">
-                {{ filter.label }}: {{ value.label }}
-              </span>
-            {% endfor %}
-          {% endif %}
-        {% endfor %}
-      </div>
-
-      {% comment %} Sort By Selector {% endcomment %}
-      <div class="flex items-center gap-2">
-        <label for="SortBy" class="text-xs font-bold text-muted uppercase tracking-wider">Sort:</label>
-        <select
-          id="SortBy"
-          name="sort_by"
-          class="bg-background border border-border text-foreground text-xs font-medium rounded-button px-3 py-2 focus:outline-none focus:ring-1 focus:ring-accent"
-          onchange="location.href = '?sort_by=' + this.value"
-        >
-          {% for option in collection.sort_options %}
-            <option value="{{ option.value }}" {% if option.value == collection.sort_by %}selected="selected"{% endif %}>
-              {{ option.name }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-
-    </div>
-
-    {% comment %} Products Grid {% endcomment %}
-    {% paginate collection.products by 12 %}
-      {% if collection.products.size > 0 %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {% for product in collection.products %}
-            <div class="group bg-surface/60 border border-border hover:border-accent/50 rounded-card p-4 flex flex-col justify-between transition-all hover:shadow-2xl">
-              
-              <div>
-                {% comment %} Product Image Container {% endcomment %}
-                <a href="{{ product.url }}" class="block relative w-full aspect-square bg-background border border-border rounded-lg overflow-hidden mb-4">
-                  {% if product.featured_image != blank %}
-                    {{ product.featured_image | image_url: width: 600 | image_tag: class: 'w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300', loading: 'lazy', alt: product.title }}
-                  {% else %}
-                    <div class="w-full h-full flex items-center justify-center text-muted text-xs">No Image</div>
-                  {% endif %}
-
-                  {% if product.available == false %}
-                    <span class="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-bold uppercase bg-rose-950 text-rose-300 border border-rose-800 rounded">
-                      Sold Out
-                    </span>
-                  {% endif %}
-                </a>
-
-                {% comment %} Product Vendor & Title {% endcomment %}
-                {% if product.vendor != blank %}
-                  <span class="text-[11px] uppercase tracking-wider text-accent font-bold block mb-1">
-                    {{ product.vendor }}
-                  </span>
-                {% endif %}
-
-                <h3 class="text-sm font-bold text-foreground line-clamp-2 leading-snug">
-                  <a href="{{ product.url }}" class="hover:text-accent transition-colors">
-                    {{ product.title }}
-                  </a>
-                </h3>
-
-                {% comment %} Technical Spec Badges (Metafield Integration) {% endcomment %}
-                <div class="mt-3 flex flex-wrap gap-1.5">
-                  <span class="inline-block text-[10px] px-2 py-0.5 bg-background border border-border rounded text-muted">
-                    {{ product.metafields.electronics.battery_life.value | default: '40h Battery' }}
-                  </span>
-                  <span class="inline-block text-[10px] px-2 py-0.5 bg-background border border-border rounded text-muted">
-                    {{ product.metafields.electronics.connectivity.value | default: 'Bluetooth 5.3' }}
-                  </span>
-                </div>
-              </div>
-
-              {% comment %} Price & Action Buttons {% endcomment %}
-              <div class="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                <div>
-                  <span class="text-base font-bold text-accent">
-                    {{ product.price | money }}
-                  </span>
-                  {% if product.compare_at_price > product.price %}
-                    <span class="text-xs line-through text-muted ml-1">
-                      {{ product.compare_at_price | money }}
-                    </span>
-                  {% endif %}
-                </div>
-
-                <div class="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    class="p-2 bg-background hover:bg-slate-800 border border-border rounded-button text-muted hover:text-accent transition-colors"
-                    title="Add to Compare"
-                    onclick="TechGearCompare && TechGearCompare.toggle({ id: '{{ product.id }}', title: '{{ product.title | escape }}', price: '{{ product.price | money }}', image: '{{ product.featured_image | image_url: width: 300 }}', url: '{{ product.url }}', battery: '{{ product.metafields.electronics.battery_life.value | default: "40h Battery" }}', connectivity: '{{ product.metafields.electronics.connectivity.value | default: "Bluetooth 5.3" }}', anc: 'Yes' })"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                  </button>
-
-                  <a
-                    href="{{ product.url }}"
-                    class="px-3 py-1.5 bg-accent hover:bg-blue-500 text-white rounded-button text-xs font-bold transition-colors"
-                  >
-                    View
-                  </a>
-                </div>
-              </div>
-
-            </div>
           {% endfor %}
         </div>
 
-        {% comment %} Pagination Controls {% endcomment %}
-        <div class="mt-12 flex justify-center">
-          {{ paginate | default_pagination }}
+        {% comment %} Sort By Selector {% endcomment %}
+        <div class="flex items-center gap-2">
+          <label for="SortBy" class="text-xs font-bold text-muted uppercase tracking-wider">Sort:</label>
+          <select
+            id="SortBy"
+            name="sort_by"
+            class="bg-background border border-border text-foreground text-xs font-medium rounded-button px-3 py-2 focus:outline-none focus:ring-1 focus:ring-accent"
+            onchange="location.href = '?sort_by=' + this.value"
+          >
+            {% for option in target_collection.sort_options %}
+              <option value="{{ option.value }}" {% if option.value == target_collection.sort_by %}selected="selected"{% endif %}>
+                {{ option.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+      </div>
+    {% endif %}
+
+    {% comment %} Products Grid Routing {% endcomment %}
+    {% if template.name == 'collection' %}
+      {% comment %} Paginated Loop on Collection Page Route {% endcomment %}
+      {% paginate target_collection.products by limit %}
+        {% if target_collection.products.size > 0 %}
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for product in target_collection.products %}
+              {% render 'product-card', product: product %}
+            {% endfor %}
+          </div>
+
+          <div class="mt-12 flex justify-center">
+            {{ paginate | default_pagination }}
+          </div>
+        {% else %}
+          <div class="py-16 text-center text-muted">
+            <p class="text-lg font-bold text-foreground">No products found in this collection.</p>
+          </div>
+        {% endif %}
+      {% endpaginate %}
+    {% else %}
+      {% comment %} Non-Paginated Loop on Homepage or Other Templates {% endcomment %}
+      {% if target_collection.products.size > 0 %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {% for product in target_collection.products limit: limit %}
+            {% render 'product-card', product: product %}
+          {% endfor %}
         </div>
       {% else %}
         <div class="py-16 text-center text-muted">
           <p class="text-lg font-bold text-foreground">No products found in this collection.</p>
-          <p class="text-xs text-muted mt-1">Try clearing your filters or choosing a different collection.</p>
         </div>
       {% endif %}
-    {% endpaginate %}
+    {% endif %}
 
   </div>
 </div>
@@ -171,6 +120,26 @@
   "name": "Electronics Collection",
   "tag": "section",
   "class": "electronics-collection-section",
-  "settings": []
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 4,
+      "max": 24,
+      "step": 4,
+      "default": 8,
+      "label": "Number of products to show"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Electronics Collection"
+    }
+  ]
 }
 {% endschema %}
