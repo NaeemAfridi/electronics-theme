@@ -1,0 +1,15 @@
+{
+  "name": "electronics-theme",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Professional Shopify theme designed for Electronics merchants",
+  "scripts": {
+    "dev:css": "tailwindcss -i ./src/styles.css -o ./assets/theme-tailwind.css --watch",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./assets/theme-tailwind.css --minify",
+    "lint": "shopify theme check"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.9",
+    "tailwindcss": "^4.0.9"
+  }
+}

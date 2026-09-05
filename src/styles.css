@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* 
+  Custom Design System Tokens for Electronics Niche 
+  Will be expanded in Phase 3
+*/
+@layer base {
+  :root {
+    --color-brand-primary: #0f172a;
+    --color-brand-accent: #3b82f6;
+  }
+}
