@@ -1,76 +1,112 @@
-<header>
-  <h2 class="header__title">
-    {{ shop.name | link_to: routes.root_url }}
-  </h2>
+{% comment %}
+  Electronics Header Section with Navigation & Action Bar
+{% endcomment %}
 
-  <div class="header__menu">
-    {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
-    {% endfor %}
-  </div>
+<header class="sticky top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-border text-foreground transition-all">
+  <div class="max-w-[var(--page-width)] mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between gap-4">
+    
+    {% comment %} Logo & Branding {% endcomment %}
+    <div class="flex items-center gap-6">
+      <a href="{{ routes.root_url }}" class="text-xl md:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+        {% if section.settings.logo != blank %}
+          {{ section.settings.logo | image_url: width: 300 | image_tag: class: 'h-8 md:h-10 w-auto object-contain', alt: shop.name }}
+        {% else %}
+          <span class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-white text-base font-black">T</span>
+          <span>{{ shop.name }}</span>
+        {% endif %}
+      </a>
+    </div>
 
-  <div class="header__icons">
-    {% if shop.customer_accounts_enabled %}
-      <shopify-account menu="{{ section.settings.customer_account_menu }}">
-        {{ 'icon-account.svg' | inline_asset_content }}
-      </shopify-account>
-    {% endif %}
+    {% comment %} Desktop Navigation Links {% endcomment %}
+    <nav class="hidden lg:flex items-center gap-8 text-sm font-semibold">
+      {% for link in section.settings.menu.links %}
+        {% if link.links.size > 0 %}
+          {% comment %} Dropdown Menu Item {% endcomment %}
+          <div class="relative group">
+            <a href="{{ link.url }}" class="flex items-center gap-1 text-slate-300 hover:text-accent py-2 transition-colors">
+              <span>{{ link.title }}</span>
+              <svg class="w-4 h-4 text-slate-400 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </a>
+            <div class="absolute left-0 top-full hidden group-hover:block w-48 py-2 bg-slate-900 border border-border rounded-lg shadow-2xl z-50">
+              {% for childlink in link.links %}
+                <a href="{{ childlink.url }}" class="block px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-accent transition-colors">
+                  {{ childlink.title }}
+                </a>
+              {% endfor %}
+            </div>
+          </div>
+        {% else %}
+          <a href="{{ link.url }}" class="text-slate-300 hover:text-accent transition-colors">
+            {{ link.title }}
+          </a>
+        {% endif %}
+      {% endfor %}
+    </nav>
 
-    <a href="{{ routes.cart_url }}">
-      {% if cart.item_count > 0 %}
-        <sup>{{ cart.item_count }}</sup>
+    {% comment %} Action Icons Bar {% endcomment %}
+    <div class="flex items-center gap-3 md:gap-4">
+      
+      {% comment %} Search Trigger {% endcomment %}
+      <a href="{{ routes.search_url }}" class="p-2 text-slate-400 hover:text-foreground transition-colors" aria-label="Search">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </a>
+
+      {% comment %} Spec Comparison Drawer Trigger Icon {% endcomment %}
+      <button
+        type="button"
+        onclick="TechGearCompare && TechGearCompare.open()"
+        class="relative p-2 text-slate-400 hover:text-accent transition-colors focus:outline-none"
+        aria-label="Open Spec Comparison"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+      </button>
+
+      {% comment %} Customer Account {% endcomment %}
+      {% if shop.customer_accounts_enabled %}
+        <a href="{{ routes.account_url }}" class="p-2 text-slate-400 hover:text-foreground transition-colors" aria-label="Account">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+        </a>
       {% endif %}
 
-      {{ 'icon-cart.svg' | inline_asset_content }}
-    </a>
+      {% comment %} Cart Icon with Badge Counter {% endcomment %}
+      <a href="{{ routes.cart_url }}" class="relative p-2 text-slate-400 hover:text-accent transition-colors flex items-center gap-2 bg-slate-900 border border-border rounded-lg px-3 py-1.5" aria-label="Cart">
+        <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+        <span class="text-xs font-bold text-foreground" id="HeaderCartCount">
+          {{ cart.item_count }}
+        </span>
+      </a>
+
+    </div>
+
   </div>
 </header>
 
-{% stylesheet %}
-  header {
-    height: 5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  header a {
-    position: relative;
-    text-decoration: none;
-    color: var(--color-foreground);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  header a sup {
-    position: absolute;
-    left: 100%;
-    overflow: hidden;
-    max-width: var(--page-margin);
-  }
-  header svg {
-    width: 2rem;
-  }
-  header .header__menu,
-  header .header__icons {
-    display: flex;
-    gap: 1rem;
-  }
-{% endstylesheet %}
-
 {% schema %}
 {
-  "name": "t:general.header",
+  "name": "Electronics Header",
+  "tag": "section",
+  "class": "electronics-header-section",
   "settings": [
     {
-      "type": "link_list",
-      "id": "menu",
-      "label": "t:labels.menu"
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Store Logo Image"
     },
     {
       "type": "link_list",
-      "id": "customer_account_menu",
-      "label": "t:labels.customer_account_menu",
-      "default": "customer-account-main-menu"
+      "id": "menu",
+      "label": "Navigation Menu",
+      "default": "main-menu"
     }
   ]
 }
